@@ -166,7 +166,7 @@ const formatDate = (timestamp: number) => {
 function ProjectDetailsWidget() {
   const [title, setTitle] = useSyncedState('title', '');
   const [description, setDescription] = useSyncedState('description', '');
-  const [designStatus, setDesignStatus] = useSyncedState('designStatus', 'Ready for dev');
+  const [designStatus, setDesignStatus] = useSyncedState('designStatus', 'To do');
   const [devStatus, setDevStatus] = useSyncedState('devStatus', 'To do');
   const [isDesignDropdownOpen, setIsDesignDropdownOpen] = useSyncedState('isDesignDropdownOpen', false);
   const [isDevDropdownOpen, setIsDevDropdownOpen] = useSyncedState('isDevDropdownOpen', false);
@@ -415,7 +415,7 @@ function ProjectDetailsWidget() {
         <Input value={description || ''} placeholder="Add a description..." fontSize={16} fill={COLORS.textPlaceholder} width="fill-parent" onTextEditEnd={handleDescriptionChange} />
 
         <AutoLayout direction="horizontal" spacing={12} zIndex={10} overflow="visible">
-          {renderCurrentStatusPill("DESIGN", designStatus || 'Ready for dev', toggleDesignDropdown)}
+          {renderCurrentStatusPill("DESIGN", designStatus || 'To do', toggleDesignDropdown)}
           {renderCurrentStatusPill("DEV", devStatus || 'To do', toggleDevDropdown)}
         </AutoLayout>
 
