@@ -149,6 +149,20 @@ const STATUS_STYLES: Record<string, { bg: string, text: string, iconColor: strin
 const DESIGN_STATUS_OPTIONS = ['To do', 'In progress', 'Waiting for approval', 'Blocked', 'Ready for dev'];
 const DEV_STATUS_OPTIONS = ['To do', 'In progress', 'In QA', 'Blocked', 'Shipped'];
 
+const formatDate = (timestamp: number) => {
+  const date = new Date(timestamp);
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const day = date.getDate();
+  const month = months[date.getMonth()];
+  const year = date.getFullYear();
+  const hours = date.getHours();
+  const minutes = ('0' + date.getMinutes()).slice(-2);
+  const ampm = hours >= 12 ? 'pm' : 'am';
+  let displayHours = hours % 12;
+  displayHours = displayHours ? displayHours : 12; // the hour '0' should be '12'
+  return `${day} ${month} ${year}, ${displayHours}:${minutes}${ampm}`;
+};
+
 function ProjectDetailsWidget() {
   const [title, setTitle] = useSyncedState('title', '');
   const [description, setDescription] = useSyncedState('description', '');
@@ -156,6 +170,9 @@ function ProjectDetailsWidget() {
   const [devStatus, setDevStatus] = useSyncedState('devStatus', 'To do');
   const [isDesignDropdownOpen, setIsDesignDropdownOpen] = useSyncedState('isDesignDropdownOpen', false);
   const [isDevDropdownOpen, setIsDevDropdownOpen] = useSyncedState('isDevDropdownOpen', false);
+  const [lastUpdated, setLastUpdated] = useSyncedState('lastUpdated', Date.now());
+
+  const updateTimestamp = () => setLastUpdated(Date.now());
 
   const [owners, setOwners] = useSyncedState('owners_v8', {
     design: '',
@@ -191,8 +208,8 @@ function ProjectDetailsWidget() {
 
   // --- Handlers ---
 
-  const handleTitleChange = (e: { characters: string }) => setTitle(e.characters);
-  const handleDescriptionChange = (e: { characters: string }) => setDescription(e.characters);
+  const handleTitleChange = (e: { characters: string }) => { setTitle(e.characters); updateTimestamp(); };
+  const handleDescriptionChange = (e: { characters: string }) => { setDescription(e.characters); updateTimestamp(); };
 
   const toggleDesignDropdown = () => {
     const willOpen = !isDesignDropdownOpen;
@@ -206,13 +223,14 @@ function ProjectDetailsWidget() {
     if (willOpen) setIsDesignDropdownOpen(false);
   };
 
-  const handleSetDesignStatus = (status: string) => { setDesignStatus(status); setIsDesignDropdownOpen(false); };
-  const handleSetDevStatus = (status: string) => { setDevStatus(status); setIsDevDropdownOpen(false); };
+  const handleSetDesignStatus = (status: string) => { setDesignStatus(status); setIsDesignDropdownOpen(false); updateTimestamp(); };
+  const handleSetDevStatus = (status: string) => { setDevStatus(status); setIsDevDropdownOpen(false); updateTimestamp(); };
 
   const handleUpdateOwner = (role: string, e: { characters: string }) => {
     const newOwners = { ...owners };
     (newOwners as any)[role] = e.characters;
     setOwners(newOwners);
+    updateTimestamp();
   };
 
   const handleOpenAddLink = () => {
@@ -236,6 +254,7 @@ function ProjectDetailsWidget() {
         setLinks([...links, { type: 'custom', label: newLinkName, url: newLinkUrl }]);
         setIsAddingLink(false);
         setEditingLinkIndex(null);
+        updateTimestamp();
       }
     } else {
       // Updating Existing Link
@@ -249,6 +268,7 @@ function ProjectDetailsWidget() {
       setLinks(nl);
       setIsAddingLink(false);
       setEditingLinkIndex(null);
+      updateTimestamp();
     }
   };
 
@@ -258,6 +278,7 @@ function ProjectDetailsWidget() {
     setLinks(nl);
     setEditingLinkIndex(null);
     setIsAddingLink(false);
+    updateTimestamp();
   };
 
   const handleEditLink = (idx: number) => {
@@ -280,13 +301,14 @@ function ProjectDetailsWidget() {
     }
   };
 
-  const handleUpdateDetail = (key: string, e: { characters: string }) => { setDetails({ ...details, [key]: e.characters }); };
-  const handleUpdateUseCaseTitle = (idx: number, e: { characters: string }) => { const n = [...useCases]; n[idx].title = e.characters; setUseCases(n); };
+  const handleUpdateDetail = (key: string, e: { characters: string }) => { setDetails({ ...details, [key]: e.characters }); updateTimestamp(); };
+  const handleUpdateUseCaseTitle = (idx: number, e: { characters: string }) => { const n = [...useCases]; n[idx].title = e.characters; setUseCases(n); updateTimestamp(); };
 
   const handleUpdateUseCaseLink = (idx: number, e: { characters: string }) => {
     const n = [...useCases];
     n[idx].link = e.characters;
     setUseCases(n);
+    updateTimestamp();
   };
 
   const handleToggleUseCaseStatus = (idx: number) => {
@@ -294,10 +316,11 @@ function ProjectDetailsWidget() {
     // Toggle between WIP and Done
     n[idx].status = n[idx].status === 'Done' ? 'WIP' : 'Done';
     setUseCases(n);
+    updateTimestamp();
   };
 
-  const handleRemoveUseCase = (idx: number) => { const n = [...useCases]; n.splice(idx, 1); setUseCases(n); setEditingUseCaseIndex(null); };
-  const handleAddUseCase = () => setUseCases([...useCases, { title: '', link: '', status: 'WIP' }]);
+  const handleRemoveUseCase = (idx: number) => { const n = [...useCases]; n.splice(idx, 1); setUseCases(n); setEditingUseCaseIndex(null); updateTimestamp(); };
+  const handleAddUseCase = () => { setUseCases([...useCases, { title: '', link: '', status: 'WIP' }]); updateTimestamp(); };
 
   const handleEditUseCase = (idx: number) => {
     // Toggle edit mode for this row
@@ -446,8 +469,8 @@ function ProjectDetailsWidget() {
             // Conditional Hover State: Only if link has valid URL, OR if active (though here it's about hover)
             // User requested: "Don't make the links blue on hover for slack and jira when it is in not provided state."
             const hasUrl = !!link.url;
-            const hoverStyle = hasUrl ? { fill: COLORS.hoverBg } : null;
-            const textHoverStyle = hasUrl ? { fill: COLORS.linkPrimary } : null;
+            const hoverStyle = hasUrl ? { fill: COLORS.hoverBg } : undefined;
+            const textHoverStyle = hasUrl ? { fill: COLORS.linkPrimary } : undefined;
 
             return (
               <AutoLayout key={idx} direction="vertical" width="fill-parent" spacing={8}>
@@ -622,6 +645,11 @@ function ProjectDetailsWidget() {
           <SVG src={ICON_ADD(COLORS.linkPrimary)} width={16} height={16} />
           <Text fontSize={16} fill={COLORS.linkPrimary}>Add use case</Text>
         </AutoLayout>
+      </AutoLayout>
+
+      {/* FOOTER - LAST UPDATED */}
+      <AutoLayout width="fill-parent" horizontalAlignItems="end">
+        <Text fontSize={12} fill={COLORS.textSecondary}>Last updated on {formatDate(lastUpdated)}</Text>
       </AutoLayout>
     </AutoLayout>
   );
