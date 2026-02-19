@@ -411,7 +411,7 @@ function ProjectDetailsWidget() {
     <AutoLayout direction="vertical" padding={48} spacing={32} cornerRadius={20} fill={COLORS.bg} width={1171}>
       {/* HEADER */}
       <AutoLayout direction="vertical" spacing={16} width="fill-parent">
-        <Input value={title || ''} placeholder="Project title" fontSize={42} fill={COLORS.textPrimary} width="fill-parent" onTextEditEnd={handleTitleChange} />
+        <Input value={title || ''} placeholder="Task title" fontSize={42} fill={COLORS.textPrimary} width="fill-parent" onTextEditEnd={handleTitleChange} />
         <Input value={description || ''} placeholder="Add a description..." fontSize={16} fill={COLORS.textPlaceholder} width="fill-parent" onTextEditEnd={handleDescriptionChange} />
 
         <AutoLayout direction="horizontal" spacing={12} zIndex={10} overflow="visible">
