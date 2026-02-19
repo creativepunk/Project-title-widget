@@ -1,0 +1,22 @@
+{
+  "name": "Project details",
+  "id": "1605516685680305779",
+  "api": "1.0.0",
+  "main": "dist/code.js",
+  "capabilities": [],
+  "enableProposedApi": false,
+  "documentAccess": "dynamic-page",
+  "editorType": [
+    "figma"
+  ],
+  "containsWidget": true,
+  "widgetApi": "1.0.0",
+  "networkAccess": {
+    "allowedDomains": [
+      "none"
+    ]
+  },
+  "permissions": [
+    "currentuser"
+  ]
+}
