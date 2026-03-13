@@ -51,11 +51,6 @@ const ICON_TODO = (color: string) => `
 <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20Z" fill="${color}"/>
 </svg>
 `;
-const ICON_RULE = (color: string) => `
-<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M16.54 11L13 14.53L11.47 13L10.59 13.88L13 16.29L17.42 11.88L16.54 11ZM19.59 7L12.01 7C12.01 7 12 7 12 7V1.75C12 0.78 11.22 0 10.25 0H5.5L2 3.5V18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V9.41L19.59 7ZM20 18H4V3.5H5.25V7H8.75V3.5H10.25V9H19.59V18H20Z" fill="${color}"/>
-</svg>
-`;
 const ICON_CHEVRON_DOWN = (color: string) => `
 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M7.41 8.59L12 13.17L16.59 8.59L18 10L12 16L6 10L7.41 8.59Z" fill="${color}"/>
@@ -163,6 +158,13 @@ const formatDate = (timestamp: number) => {
   return `${day} ${month} ${year}, ${displayHours}:${minutes}${ampm}`;
 };
 
+interface Owners {
+  design: string;
+  product: string;
+  engineering: string;
+  qa: string;
+}
+
 function ProjectDetailsWidget() {
   const [title, setTitle] = useSyncedState('title', '');
   const [description, setDescription] = useSyncedState('description', '');
@@ -174,7 +176,7 @@ function ProjectDetailsWidget() {
 
   const updateTimestamp = () => setLastUpdated(Date.now());
 
-  const [owners, setOwners] = useSyncedState('owners_v8', {
+  const [owners, setOwners] = useSyncedState<Owners>('owners_v8', {
     design: '',
     product: '',
     engineering: '',
@@ -228,7 +230,7 @@ function ProjectDetailsWidget() {
 
   const handleUpdateOwner = (role: string, e: { characters: string }) => {
     const newOwners = { ...owners };
-    (newOwners as any)[role] = e.characters;
+    newOwners[role as keyof Owners] = e.characters;
     setOwners(newOwners);
     updateTimestamp();
   };
@@ -414,7 +416,7 @@ function ProjectDetailsWidget() {
         <Input value={title || ''} placeholder="Task title" fontSize={42} fill={COLORS.textPrimary} width="fill-parent" onTextEditEnd={handleTitleChange} />
         <Input value={description || ''} placeholder="Add a description..." fontSize={16} fill={COLORS.textPlaceholder} width="fill-parent" onTextEditEnd={handleDescriptionChange} />
 
-        <AutoLayout direction="horizontal" spacing={12} zIndex={10} overflow="visible">
+        <AutoLayout direction="horizontal" spacing={12} overflow="visible">
           {renderCurrentStatusPill("DESIGN", designStatus || 'To do', toggleDesignDropdown)}
           {renderCurrentStatusPill("DEV", devStatus || 'To do', toggleDevDropdown)}
         </AutoLayout>
@@ -430,11 +432,11 @@ function ProjectDetailsWidget() {
       </AutoLayout>
 
       {/* TEAM & LINKS */}
-      <AutoLayout direction="horizontal" spacing={32} width="fill-parent" zIndex={20}>
+      <AutoLayout direction="horizontal" spacing={32} width="fill-parent">
         <AutoLayout direction="vertical" spacing={16} width="fill-parent">
           {['design', 'product', 'engineering', 'qa'].map(role => {
             const label = (role === 'qa' ? 'QA' : role.charAt(0).toUpperCase() + role.slice(1)) + ' owner';
-            const value = (owners as any)[role] || '';
+            const value = owners[role as keyof Owners] || '';
 
             return (
               <AutoLayout key={role} direction="horizontal" verticalAlignItems="center" spacing={30} height={40}>
@@ -444,8 +446,7 @@ function ProjectDetailsWidget() {
                   placeholder="Add owner..."
                   fontSize={14}
                   fill={COLORS.textPrimary}
-                  placeholderColor={COLORS.textPlaceholder}
-                  width="fill-parent"
+                  width={300}
                   onTextEditEnd={(e) => handleUpdateOwner(role, e)}
                 />
               </AutoLayout>
