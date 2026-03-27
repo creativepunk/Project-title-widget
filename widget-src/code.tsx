@@ -76,6 +76,23 @@ const ICON_DONE = (color: string) => `
 <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" fill="${color}"/>
 </svg>
 `;
+const ICON_DRAG_HANDLE = (color: string) => `
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<circle cx="9" cy="6" r="1.5" fill="${color}"/><circle cx="15" cy="6" r="1.5" fill="${color}"/>
+<circle cx="9" cy="12" r="1.5" fill="${color}"/><circle cx="15" cy="12" r="1.5" fill="${color}"/>
+<circle cx="9" cy="18" r="1.5" fill="${color}"/><circle cx="15" cy="18" r="1.5" fill="${color}"/>
+</svg>
+`;
+const ICON_ARROW_UP = (color: string) => `
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6 1.41 1.41z" fill="${color}"/>
+</svg>
+`;
+const ICON_ARROW_DOWN = (color: string) => `
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z" fill="${color}"/>
+</svg>
+`;
 // User-Provided Jira White Outline Logo
 const ICON_JIRA = `
 <svg width="24" height="24" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" fill="none">
@@ -323,6 +340,16 @@ function ProjectDetailsWidget() {
 
   const handleRemoveUseCase = (idx: number) => { const n = [...useCases]; n.splice(idx, 1); setUseCases(n); setEditingUseCaseIndex(null); updateTimestamp(); };
   const handleAddUseCase = () => { setUseCases([...useCases, { title: '', link: '', status: 'WIP' }]); updateTimestamp(); };
+  const handleMoveUseCase = (idx: number, direction: 'up' | 'down') => {
+    const n = [...useCases];
+    const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (swapIdx < 0 || swapIdx >= n.length) return;
+    [n[idx], n[swapIdx]] = [n[swapIdx], n[idx]];
+    setUseCases(n);
+    if (editingUseCaseIndex === idx) setEditingUseCaseIndex(swapIdx);
+    else if (editingUseCaseIndex === swapIdx) setEditingUseCaseIndex(idx);
+    updateTimestamp();
+  };
 
   const handleEditUseCase = (idx: number) => {
     // Toggle edit mode for this row
@@ -561,6 +588,7 @@ function ProjectDetailsWidget() {
         <Text fontSize={16} fill={COLORS.textSecondary} fontWeight={700}>USE CASES</Text>
         <AutoLayout direction="vertical" width="fill-parent" cornerRadius={8} stroke={COLORS.border} strokeWidth={1}>
           <AutoLayout direction="horizontal" width="fill-parent" fill={COLORS.tableHeaderBg} height={40}>
+            <AutoLayout padding={12} width={48} />
             <AutoLayout padding={12} width="fill-parent"><Text fontSize={16} fontWeight={700} fill={COLORS.textSecondary}>Use case</Text></AutoLayout>
             <AutoLayout padding={12} width={169}><Text fontSize={16} fontWeight={700} fill={COLORS.textSecondary}>Section link</Text></AutoLayout>
             <AutoLayout padding={12} width={206}><Text fontSize={16} fontWeight={700} fill={COLORS.textSecondary}>Status</Text></AutoLayout>
@@ -574,7 +602,29 @@ function ProjectDetailsWidget() {
             return (
               <AutoLayout key={idx} direction="vertical" width="fill-parent">
                 <AutoLayout direction="horizontal" width="fill-parent">
-                  <AutoLayout padding={12} width="fill-parent">
+                {/* Drag Handle + Reorder Buttons */}
+                <AutoLayout width={48} padding={4} direction="vertical" verticalAlignItems="center" horizontalAlignItems="center" spacing={2}>
+                  <SVG src={ICON_DRAG_HANDLE(COLORS.textSecondary)} width={16} height={16} />
+                  <AutoLayout direction="horizontal" spacing={2}>
+                    <AutoLayout
+                      onClick={idx > 0 ? () => handleMoveUseCase(idx, 'up') : () => {}}
+                      padding={2}
+                      cornerRadius={3}
+                      opacity={idx > 0 ? 1 : 0.3}
+                    >
+                      <SVG src={ICON_ARROW_UP(COLORS.textSecondary)} width={14} height={14} />
+                    </AutoLayout>
+                    <AutoLayout
+                      onClick={idx < useCases.length - 1 ? () => handleMoveUseCase(idx, 'down') : () => {}}
+                      padding={2}
+                      cornerRadius={3}
+                      opacity={idx < useCases.length - 1 ? 1 : 0.3}
+                    >
+                      <SVG src={ICON_ARROW_DOWN(COLORS.textSecondary)} width={14} height={14} />
+                    </AutoLayout>
+                  </AutoLayout>
+                </AutoLayout>
+                <AutoLayout padding={12} width="fill-parent">
                     <Input value={uc.title || ''} placeholder="Title..." fontSize={16} fill={COLORS.textPrimary} width="fill-parent" onTextEditEnd={(e) => handleUpdateUseCaseTitle(idx, e)} />
                   </AutoLayout>
 
