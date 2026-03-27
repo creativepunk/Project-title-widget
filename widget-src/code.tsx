@@ -76,13 +76,6 @@ const ICON_DONE = (color: string) => `
 <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" fill="${color}"/>
 </svg>
 `;
-const ICON_DRAG_HANDLE = (color: string) => `
-<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<circle cx="9" cy="6" r="1.5" fill="${color}"/><circle cx="15" cy="6" r="1.5" fill="${color}"/>
-<circle cx="9" cy="12" r="1.5" fill="${color}"/><circle cx="15" cy="12" r="1.5" fill="${color}"/>
-<circle cx="9" cy="18" r="1.5" fill="${color}"/><circle cx="15" cy="18" r="1.5" fill="${color}"/>
-</svg>
-`;
 const ICON_ARROW_UP = (color: string) => `
 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6 1.41 1.41z" fill="${color}"/>
@@ -604,7 +597,6 @@ function ProjectDetailsWidget() {
                 <AutoLayout direction="horizontal" width="fill-parent">
                 {/* Drag Handle + Reorder Buttons */}
                 <AutoLayout width={48} padding={4} direction="vertical" verticalAlignItems="center" horizontalAlignItems="center" spacing={2}>
-                  <SVG src={ICON_DRAG_HANDLE(COLORS.textSecondary)} width={16} height={16} />
                   <AutoLayout direction="horizontal" spacing={2}>
                     <AutoLayout
                       onClick={idx > 0 ? () => handleMoveUseCase(idx, 'up') : () => {}}
